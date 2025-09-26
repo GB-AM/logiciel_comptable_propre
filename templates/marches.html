@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head><title>Liste des Marchés en Cours</title></head>
+<body>
+    <h1>Liste des Marchés en Cours</h1>
+    <ul>
+    {% for marche in marches %}
+        <li>
+            {{ marche.nom_marche }} - Client: {{ session.query(Client).get(marche.client_id).nom_entreprise if marche.client_id and session.query(Client).get(marche.client_id) else 'Non défini' }}
+            - Montant HT: {{ "{:,.2f}".format(marche.montant_total_ht).replace(',', ' ') }} €
+            [<a href="/marche/dupliquer/{{ marche.id }}">Dupliquer</a>]
+            [<a href="/marche/modifier/{{ marche.id }}">Modifier</a>]
+            [<a href="/marche/archiver/{{ marche.id }}">Archiver</a>]
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="/marche/nouveau"><button>Nouveau marché</button></a>
+    <a href="/">Retour</a>
+</body>
+</html>

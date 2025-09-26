@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Avenants</title></head>
+<body>
+    <h1>Liste des Avenants</h1>
+    <ul>
+    {% for avenant in avenants %}
+        <li>{{ avenant.numero_avenant }} - {{ avenant.montant_ajoute }} €</li>
+    {% endfor %}
+    </ul>
+    <a href="/">Retour</a>
+</body>
+</html>

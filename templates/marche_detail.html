@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head><title>{{ marche.nom_marche }}</title></head>
+<body>
+    <h1>Détails du Marché : {{ marche.nom_marche }}</h1>
+    <p>Intitulé : {{ marche.intitule }}</p>
+    <p>Adresse Chantier : {{ marche.adresse_chantier }} ({{ marche.code_postal }} {{ marche.ville }})</p>
+    <p>Montant Total HT : {{ "{:,.2f}".format(marche.montant_total_ht).replace(',', ' ') }} €</p>
+    <p>Taux de TVA : {{ marche.taux_tva }}%</p>
+    <h3>Pénalités</h3>
+    <ul>
+    {% for penalite in penalites %}
+        <li>{{ penalite.type_penalite }} : {{ penalite.valeur }} {{ penalite.unite if penalite.unite != 'custom' else penalite.unite_custom }} (Min : {{ penalite.minimum }} €)</li>
+    {% endfor %}
+    </ul>
+    <h3>Lots</h3>
+    <table border="1">
+        <tr><th>N° Lot</th><th>Intitulé</th><th>Entreprise</th><th>Montant HT</th></tr>
+        {% for lot in lots %}
+            <tr>
+                <td>{{ lot.numero_lot }}</td>
+                <td>{{ lot.intitule_lot }}</td>
+                <td>{{ lot.entreprise.nom if lot.entreprise else '' }}</td>
+                <td>{{ "{:,.2f}".format(lot.montant_ht).replace(',', ' ') }} €</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <p>Actions :</p>
+    <a href="#"><button>Suivi financier général</button></a><br>
+    <a href="#"><button>Avenants</button></a><br>
+    <a href="#"><button>Certificats de paiement</button></a><br>
+    <a href="#"><button>D.G.D</button></a><br>
+    <a href="#"><button>Sous-traitance</button></a><br>
+    <a href="/marches"><button>Retour</button></a>
+</body>
+</html>

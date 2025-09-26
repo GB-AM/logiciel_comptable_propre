@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head><title>Créer un Nouveau Marché</title></head>
+<body>
+    <h1>Créer un Nouveau Marché</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="post" id="marche_form">
+        <label>Nom du Marché :</label><input type="text" name="nom_marche" required><br>
+        <label>Intitulé :</label><input type="text" name="intitule" required><br>
+        <label>Adresse Chantier :</label><input type="text" name="adresse_chantier" required><br>
+        <label>Code Postal :</label><input type="text" name="code_postal" required><br>
+        <label>Ville :</label><input type="text" name="ville" required><br>
+        <label>Client :</label>
+        <select name="client_id" id="client_select" required onchange="updateClientInfo()">
+            <option value="">Sélectionnez un client</option>
+            {% for client in clients %}
+                <option value="{{ client.id }}" data-adresse="{{ client.adresse }}" data-cp="{{ client.code_postal }}" data-ville="{{ client.ville }}" data-tel="{{ client.telephone }}" data-mail="{{ client.mail_general }}">
+                    {{ client.nom_entreprise }}
+                </option>
+            {% endfor %}
+        </select><br>
+        <div id="client_info"></div>
+        <label>Montant Total HT :</label><input type="text" id="montant_total_ht" name="montant_total_ht" readonly><br>
+        <label>Taux de TVA :</label>
+        <select name="taux_tva">
+            <option value="10">10%</option>
+            <option value="20" selected>20%</option>
+        </select><br>
+        <h3>Pénalités</h3>
+        <div id="penalites_container">
+            <div class="penalite_row">
+                <label>Type :</label>
+                <select name="penalite_type_1" onchange="updatePenaliteFields(1)">
+                    <option value="">Sélectionnez</option>
+                    <option value="Retard dans le commencement des travaux">Retard dans le commencement des travaux</option>
+                    <option value="Retard dans l’achèvement des travaux">Retard dans l’achèvement des travaux</option>
+                    <option value="Retard ou absence aux réunions">Retard ou absence aux réunions</option>
+                    <option value="Absence d’encadrement">Absence d’encadrement</option>
+                    <option value="Défaut d’exécution">Défaut d’exécution</option>
+                    <option value="Retard sur communication du PPSPS">Retard sur communication du PPSPS</option>
+                    <option value="Retard sur remise de documents">Retard sur remise de documents</option>
+                    <option value="Retard sur communication des devis TMA">Retard sur communication des devis TMA</option>
+                    <option value="Non-respect des règles de sécurité">Non-respect des règles de sécurité</option>
+                    <option value="Provisoires pour malfaçons">Provisoires pour malfaçons</option>
+                    <option value="Non remise de documents après exécution">Non remise de documents après exécution</option>
+                    <option value="Retard dans la levée des réserves d’OPR">Retard dans la levée des réserves d’OPR</option>
+                    <option value="Retard dans la levée des réserves de réception">Retard dans la levée des réserves de réception</option>
+                    <option value="Non-présentation de la carte d’identification professionnelle">Non-présentation de la carte d’identification professionnelle</option>
+                    <option value="Retard sur ordres donnés">Retard sur ordres donnés</option>
+                    <option value="Non-respect des surfaces dédiées aux logements">Non-respect des surfaces dédiées aux logements</option>
+                    <option value="Non-respect de label ou certification">Non-respect de label ou certification</option>
+                    <option value="Non-atteinte des performances des équipements">Non-atteinte des performances des équipements</option>
+                    <option value="Retard dans la libération du terrain">Retard dans la libération du terrain</option>
+                    <option value="Sous-traitance non-déclarée">Sous-traitance non-déclarée</option>
+                    <option value="Défaut de nettoyage">Défaut de nettoyage</option>
+                </select>
+                <label>Valeur :</label><input type="number" step="0.0001" name="penalite_1" id="penalite_value_1">
+                <label>Unité :</label>
+                <select name="unite_1" id="penalite_unite_1" onchange="customUnit(1)">
+                    <option value="jour">€/jour</option>
+                    <option value="fraction">1/xème</option>
+                    <option value="logement">€/logement</option>
+                    <option value="m²">€/m²</option>
+                    <option value="custom">Personnalisé</option>
+                </select>
+                <input type="text" name="unite_custom_1" id="penalite_unite_custom_1" style="display:none;" placeholder="Unité personnalisée">
+                <label>Minimum :</label><input type="number" step="0.01" name="minimum_1" id="penalite_minimum_1" value="0">
+            </div>
+        </div>
+        <button type="button" onclick="addPenalite()">Ajouter une pénalité</button><br>
+        <h3>Lots</h3>
+        <div id="lots_container">
+            {% for i in range(1, 26) %}
+                <div class="lot_row" id="lot_{{ i }}">
+                    <label>N° Lot {{ i }} :</label><input type="text" name="numero_lot_{{ i }}"><br>
+                    <label>Intitulé Lot {{ i }} :</label><input type="text" name="intitule_lot_{{ i }}"><br>
+                    <label>Entreprise {{ i }} :</label>
+                    <select name="enterprise_nom_{{ i }}">
+                        <option value="">Sélectionnez</option>
+                        {% for enterprise in enterprises %}
+                            <option value="{{ enterprise.nom }}">{{ enterprise.nom }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <label>Montant HT {{ i }} :</label><input type="text" name="montant_ht_{{ i }}" oninput="updateTotal()" onblur="formatAmount(this)" placeholder="000 000 000.00 €"><br>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addLot()">Ajouter un lot</button><br>
+        <button type="submit">Créer</button>
+    </form>
+    <a href="/marches"><button>Retour</button></a>
+    <script>
+        function updateTotal() {
+            let total = 0;
+            for (let i = 1; i <= 50; i++) {
+                const montantInput = document.query_selector(`input[name="montant_ht_${i}"]`);
+                if (montantInput && montantInput.value) {
+                    let value = parseFloat(montantInput.value.replace(/ /g, ''));
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+                }
+            }
+            document.getElementById('montant_total_ht').value = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        }
+
+        function formatAmount(input) {
+            let value = parseFloat(input.value.replace(/ /g, ''));
+            if (!isNaN(value)) {
+                input.value = value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+            }
+        }
+
+        // ... Reste du JS inchangé
+    </script>
+</body>
+</html>
