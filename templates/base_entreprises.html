@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Base Entreprises</title></head>
+<body>
+    <h1>Liste des Entreprises</h1>
+    <ul>
+        {% for entreprise in entreprises %}
+            <li>{{ entreprise.nom }}</li>
+        {% endfor %}
+    </ul>
+    <a href="/"><button>Retour</button></a>
+</body>
+</html>

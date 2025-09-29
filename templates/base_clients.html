@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Base Clients</title></head>
+<body>
+    <h1>Liste des Clients</h1>
+    <ul>
+        {% for client in clients %}
+            <li>{{ client.nom_entreprise }} - {{ client.adresse }} ({{ client.ville }})</li>
+        {% endfor %}
+    </ul>
+    <a href="/"><button>Retour</button></a>
+</body>
+</html>

@@ -144,6 +144,16 @@ def import_data():
         return redirect(url_for('import_data'))  # Reste sur la page d'import après succès
     return render_template('import_data.html')
 
+@app.route('/base_clients')
+def base_clients():
+    clients = Client.query.all()
+    return render_template('base_clients.html', clients=clients)
+
+@app.route('/base_entreprises')
+def base_entreprises():
+    entreprises = Entreprise.query.all()
+    return render_template('base_entreprises.html', entreprises=entreprises)
+    
 if __name__ == '__main__':
     print("Démarrage de l'application...")
     port = int(os.environ.get('PORT', 5000))
