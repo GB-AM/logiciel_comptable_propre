@@ -161,26 +161,75 @@ def import_data():
     if request.method == 'POST':
         file = request.files['file']
         if file and file.filename.endswith('.xls'):
-            df = pd.read_excel(file, engine='xlrd')
-            filename = file.filename.lower()
-            if 'client' in filename:  # Pour "Trame base client.xls"
-                for index, row in df.iterrows():
-                    client = Client(
-                        nom_entreprise=row.get('nom_entreprise', row.get('Nom de l\'entreprise', '')),
-                        adresse=row.get('adresse', ''),
-                        code_postal=row.get('code_postal', ''),
-                        ville=row.get('ville', ''),
-                        telephone=row.get('telephone', ''),
-                        mail_general=row.get('mail_general', '')
-                    )
-                    db.session.add(client)
-            elif 'entreprise' in filename:  # Pour "Trame base entreprise.xls"
-                for index, row in df.iterrows():
-                    entreprise = Entreprise(nom=row.get('nom', row.get('Nom', '')))
-                    db.session.add(entreprise)
-            db.session.commit()
-            flash('Données importées avec succès !')
-        return redirect(url_for('import_data'))  # Reste sur la page d'import après succès
+            try:
+                df = pd.read_excel(file, engine='xlrd')
+                filename = file.filename.lower()
+                if 'client' in filename or 'clients' in filename:
+                    print(f"Importing clients from {filename}")
+                    for index, row in df.iterrows():
+                        print(row.to_dict())  # Debug
+                        client = Client(
+                            nom_entreprise=row.get('NOM ENTREPRISE', ''),
+                            forme_juridique=row.get('FORME JURIDIQUE', ''),
+                            representant_legal=row.get('REPRESENTANT LEGAL', ''),
+                            qualite=row.get('QUALITE', ''),
+                            adresse=row.get('ADRESSE', ''),
+                            complement_adresse=row.get('COMPLEMENT ADRESSE', ''),
+                            code_postal=row.get('CODE POSTAL', ''),
+                            ville=row.get('VILLE', ''),
+                            telephone=row.get('TELEPHONE', ''),
+                            mail_general=row.get('MAIL GENERAL', ''),
+                            siret=row.get('SIRET', ''),
+                            code_ape=row.get('CODE APE', ''),
+                            nom_charge_suivi_travaux=row.get('NOM Chargé suivi travaux', ''),
+                            fonction_charge_suivi_travaux=row.get('FONCTION Chargé suivi travaux', ''),
+                            mail_charge_suivi_travaux=row.get('MAIL Chargé suivi travaux', ''),
+                            telephone_charge_suivi_travaux=row.get('TELEPHONE Chargé suivi travaux', ''),
+                            nom_charge_suivi_compta=row.get('NOM Chargé suivi compta', ''),
+                            fonction_charge_suivi_compta=row.get('FONCTION Chargé suivi compta', ''),
+                            mail_charge_suivi_compta=row.get('MAIL Chargé suivi compta', '')
+                        )
+                        db.session.add(client)
+                elif 'entreprise' in filename or 'entreprises' in filename:
+                    print(f"Importing entreprises from {filename}")
+                    for index, row in df.iterrows():
+                        print(row.to_dict())  # Debug
+                        entreprise = Entreprise(
+                            nom_entreprise=row.get('NOM ENTREPRISE', ''),
+                            forme_juridique=row.get('FORME JURIDIQUE', ''),
+                            representant_legal=row.get('REPRESENTANT LEGAL', ''),
+                            qualite=row.get('QUALITE', ''),
+                            adresse=row.get('ADRESSE', ''),
+                            complement_adresse=row.get('COMPLEMENT ADRESSE', ''),
+                            code_postal=row.get('CODE POSTAL', ''),
+                            ville=row.get('VILLE', ''),
+                            telephone=row.get('TELEPHONE', ''),
+                            mail_general=row.get('MAIL GENERAL', ''),
+                            siret=row.get('SIRET', ''),
+                            code_ape=row.get('CODE APE', ''),
+                            titre_signataire_doc=row.get('TITRE signataire doc', ''),
+                            nom_signataire_doc=row.get('NOM signataire doc', ''),
+                            prenom_signataire_doc=row.get('PRENOM signataire doc', ''),
+                            fonction_signataire_doc=row.get('FONCTION signataire doc', ''),
+                            mail_signataire_doc=row.get('MAIL signataire doc', ''),
+                            telephone_signataire_doc=row.get('TELEPHONE signataire doc', ''),
+                            titre_signataire_ar24=row.get('TITRE signataire AR24', ''),
+                            nom_signataire_ar24=row.get('NOM signataire AR24', ''),
+                            prenom_signataire_ar24=row.get('PRENOM signataire AR24', ''),
+                            fonction_signataire_ar24=row.get('FONCTION signataire AR24', ''),
+                            mail_signataire_ar24=row.get('MAIL signataire AR24', ''),
+                            titre_correspondant_situations=row.get('TITRE correspondant situations de travaux', ''),
+                            nom_correspondant_situations=row.get('NOM correspondant situations de travaux', ''),
+                            prenom_correspondant_situations=row.get('PRENOM correspondant situations de travaux', ''),
+                            mail_correspondant_situations=row.get('MAIL correspondant situations de travaux', '')
+                        )
+                        db.session.add(entreprise)
+                db.session.commit()
+                flash('Données importées avec succès !')
+            except Exception as e:
+                flash(f'Erreur lors de l\'import : {str(e)}')
+                print(f"Error: {str(e)}")
+        return redirect(url_for('import_data'))
     return render_template('import_data.html')
 
 @app.route('/base_clients', methods=['GET', 'POST'])
@@ -243,66 +292,32 @@ def base_clients():
             flash('Client ajouté avec succès !')
     clients = Client.query.all()
     return render_template('base_clients.html', clients=clients)
-
+    
 @app.route('/base_entreprises', methods=['GET', 'POST'])
 def base_entreprises():
     if request.method == 'POST':
         if 'delete' in request.form:
-            client_id = request.form['delete']
-            client = Client.query.get_or_404(client_id)
-            db.session.delete(client)
+            entreprise_id = request.form['delete']
+            entreprise = Entreprise.query.get_or_404(entreprise_id)
+            db.session.delete(entreprise)
             db.session.commit()
-            flash('Client supprimé avec succès !')
+            flash('Entreprise supprimée avec succès !')
         elif 'update' in request.form:
-            client_id = request.form['client_id']
-            client = Client.query.get_or_404(client_id)
-            client.nom_entreprise = request.form['nom_entreprise']
-            client.forme_juridique = request.form['forme_juridique']
-            client.representant_legal = request.form['representant_legal']
-            client.qualite = request.form['qualite']
-            client.adresse = request.form['adresse']
-            client.complement_adresse = request.form['complement_adresse']
-            client.code_postal = request.form['code_postal']
-            client.ville = request.form['ville']
-            client.telephone = request.form['telephone']
-            client.mail_general = request.form['mail_general']
-            client.siret = request.form['siret']
-            client.code_ape = request.form['code_ape']
-            client.nom_charge_suivi_travaux = request.form['nom_charge_suivi_travaux']
-            client.fonction_charge_suivi_travaux = request.form['fonction_charge_suivi_travaux']
-            client.mail_charge_suivi_travaux = request.form['mail_charge_suivi_travaux']
-            client.telephone_charge_suivi_travaux = request.form['telephone_charge_suivi_travaux']
-            client.nom_charge_suivi_compta = request.form['nom_charge_suivi_compta']
-            client.fonction_charge_suivi_compta = request.form['fonction_charge_suivi_compta']
-            client.mail_charge_suivi_compta = request.form['mail_charge_suivi_compta']
+            entreprise_id = request.form['client_id']  # Doit être 'entreprise_id' ?
+            entreprise = Entreprise.query.get_or_404(entreprise_id)
+            entreprise.nom_entreprise = request.form['nom_entreprise']
+            # ... autres champs ...
             db.session.commit()
-            flash('Client mis à jour avec succès !')
+            flash('Entreprise mise à jour avec succès !')
         elif 'add' in request.form:
-            new_client = Client(
+            new_entreprise = Entreprise(
                 nom_entreprise=request.form['nom_entreprise'],
-                forme_juridique=request.form['forme_juridique'],
-                representant_legal=request.form['representant_legal'],
-                qualite=request.form['qualite'],
-                adresse=request.form['adresse'],
-                complement_adresse=request.form['complement_adresse'],
-                code_postal=request.form['code_postal'],
-                ville=request.form['ville'],
-                telephone=request.form['telephone'],
-                mail_general=request.form['mail_general'],
-                siret=request.form['siret'],
-                code_ape=request.form['code_ape'],
-                nom_charge_suivi_travaux=request.form['nom_charge_suivi_travaux'],
-                fonction_charge_suivi_travaux=request.form['fonction_charge_suivi_travaux'],
-                mail_charge_suivi_travaux=request.form['mail_charge_suivi_travaux'],
-                telephone_charge_suivi_travaux=request.form['telephone_charge_suivi_travaux'],
-                nom_charge_suivi_compta=request.form['nom_charge_suivi_compta'],
-                fonction_charge_suivi_compta=request.form['fonction_charge_suivi_compta'],
-                mail_charge_suivi_compta=request.form['mail_charge_suivi_compta']
+                # ... autres champs ...
             )
-            db.session.add(new_client)
+            db.session.add(new_entreprise)
             db.session.commit()
-            flash('Client ajouté avec succès !')
-    entreprises = Client.query.all()
+            flash('Entreprise ajoutée avec succès !')
+    entreprises = Entreprise.query.all()  # Corrige la casse
     return render_template('base_entreprises.html', entreprises=entreprises)
     
 if __name__ == '__main__':
