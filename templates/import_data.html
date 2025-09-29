@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Importer Données</title></head>
+<body>
+    <h1>Importer Données</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xls">
+        <button type="submit">Importer</button>
+    </form>
+    <a href="/"><button>Retour</button></a>
+</body>
+</html>
