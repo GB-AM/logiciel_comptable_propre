@@ -123,10 +123,11 @@ def import_data():
         file = request.files['file']
         if file and file.filename.endswith('.xls'):
             df = pd.read_excel(file, engine='xlrd')
-            for index, row in df.iterrows():
-                if 'nom_entreprise' in df.columns and 'adresse' in df.columns:
+            filename = file.filename.lower()
+            if 'client' in filename:  # Pour "Trame base client.xls"
+                for index, row in df.iterrows():
                     client = Client(
-                        nom_entreprise=row['nom_entreprise'],
+                        nom_entreprise=row.get('nom_entreprise', row.get('Nom de l\'entreprise', '')),
                         adresse=row.get('adresse', ''),
                         code_postal=row.get('code_postal', ''),
                         ville=row.get('ville', ''),
@@ -134,9 +135,13 @@ def import_data():
                         mail_general=row.get('mail_general', '')
                     )
                     db.session.add(client)
+            elif 'entreprise' in filename:  # Pour "Trame base entreprise.xls"
+                for index, row in df.iterrows():
+                    entreprise = Entreprise(nom=row.get('nom', row.get('Nom', '')))
+                    db.session.add(entreprise)
             db.session.commit()
             flash('Données importées avec succès !')
-        return redirect(url_for('nouveau_marche'))
+        return redirect(url_for('import_data'))  # Reste sur la page d'import après succès
     return render_template('import_data.html')
 
 if __name__ == '__main__':
