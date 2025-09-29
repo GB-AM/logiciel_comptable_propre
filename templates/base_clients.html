@@ -8,12 +8,40 @@
         .search-bar { margin-bottom: 20px; }
         table { width: 100%; }
         th, td { vertical-align: middle; }
+        .form-container { margin-top: 20px; }
     </style>
 </head>
 <body>
     <h1>Liste des Clients</h1>
     <div class="search-bar">
         <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un client...">
+    </div>
+    <div class="form-container">
+        <h2>Ajouter un Client</h2>
+        <form method="post" action="{{ url_for('base_clients') }}">
+            <div class="row g-3">
+                <div class="col-md-4"><input type="text" name="nom_entreprise" class="form-control" placeholder="Nom Entreprise" required></div>
+                <div class="col-md-4"><input type="text" name="forme_juridique" class="form-control" placeholder="Forme Juridique"></div>
+                <div class="col-md-4"><input type="text" name="representant_legal" class="form-control" placeholder="Représentant Légal"></div>
+                <div class="col-md-4"><input type="text" name="qualite" class="form-control" placeholder="Qualité"></div>
+                <div class="col-md-4"><input type="text" name="adresse" class="form-control" placeholder="Adresse"></div>
+                <div class="col-md-4"><input type="text" name="complement_adresse" class="form-control" placeholder="Complément Adresse"></div>
+                <div class="col-md-2"><input type="text" name="code_postal" class="form-control" placeholder="Code Postal"></div>
+                <div class="col-md-2"><input type="text" name="ville" class="form-control" placeholder="Ville"></div>
+                <div class="col-md-3"><input type="text" name="telephone" class="form-control" placeholder="Téléphone"></div>
+                <div class="col-md-3"><input type="email" name="mail_general" class="form-control" placeholder="Mail Général"></div>
+                <div class="col-md-2"><input type="text" name="siret" class="form-control" placeholder="SIRET"></div>
+                <div class="col-md-2"><input type="text" name="code_ape" class="form-control" placeholder="Code APE"></div>
+                <div class="col-md-4"><input type="text" name="nom_charge_suivi_travaux" class="form-control" placeholder="Chargé Suivi Travaux"></div>
+                <div class="col-md-4"><input type="text" name="fonction_charge_suivi_travaux" class="form-control" placeholder="Fonction CST"></div>
+                <div class="col-md-4"><input type="email" name="mail_charge_suivi_travaux" class="form-control" placeholder="Mail CST"></div>
+                <div class="col-md-4"><input type="text" name="telephone_charge_suivi_travaux" class="form-control" placeholder="Téléphone CST"></div>
+                <div class="col-md-4"><input type="text" name="nom_charge_suivi_compta" class="form-control" placeholder="Chargé Suivi Comptabilité"></div>
+                <div class="col-md-4"><input type="text" name="fonction_charge_suivi_compta" class="form-control" placeholder="Fonction CSC"></div>
+                <div class="col-md-4"><input type="email" name="mail_charge_suivi_compta" class="form-control" placeholder="Mail CSC"></div>
+                <div class="col-12"><button type="submit" name="add" class="btn btn-primary">Ajouter</button></div>
+            </div>
+        </form>
     </div>
     <table class="table table-striped table-hover">
         <thead>
@@ -28,12 +56,7 @@
                 <th>Téléphone</th>
                 <th>Mail Général</th>
                 <th>SIRET</th>
-                <th>Code APE</th>
-                <th>Chargé Suivi Travaux</th>
-                <th>Mail CST</th>
-                <th>Téléphone CST</th>
-                <th>Chargé Suivi Comptabilité</th>
-                <th>Mail CSC</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody id="clientsTable">
@@ -49,12 +72,16 @@
                 <td>{{ client.telephone }}</td>
                 <td>{{ client.mail_general }}</td>
                 <td>{{ client.siret }}</td>
-                <td>{{ client.code_ape }}</td>
-                <td>{{ client.nom_charge_suivi_travaux }} ({{ client.fonction_charge_suivi_travaux }})</td>
-                <td>{{ client.mail_charge_suivi_travaux }}</td>
-                <td>{{ client.telephone_charge_suivi_travaux }}</td>
-                <td>{{ client.nom_charge_suivi_compta }} ({{ client.fonction_charge_suivi_compta }})</td>
-                <td>{{ client.mail_charge_suivi_compta }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('base_clients') }}" style="display:inline;">
+                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                        <button type="submit" name="edit" class="btn btn-warning btn-sm">Modifier</button>
+                    </form>
+                    <form method="post" action="{{ url_for('base_clients') }}" style="display:inline;" onsubmit="return confirm('Confirmer la suppression ?');">
+                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                        <button type="submit" name="delete" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
