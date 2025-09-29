@@ -189,6 +189,32 @@ def import_data():
         flash(f'Erreur lors de l\'import : {str(e)}')
     return redirect(url_for('accueil'))
     
+import os
+from flask import Flask, render_template, request, flash, session, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_socketio import SocketIO
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import xlrd
+
+app = Flask(__name__)
+app.secret_key = 'votre_clé_secrète_ici'  # Change ça pour une clé sécurisée
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Configuration de la base de données
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+Base = declarative_base()
+
+# Modèles (Client, Entreprise, Marche, etc.) - garde tes définitions existantes ici
+
+# Routes (accueil, marches, nouveau_marche, import_data) - garde tes routes existantes ici
+
 if __name__ == '__main__':
     print("Démarrage de l'application...")
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True) 
+    # Pour Render, utilise Gunicorn avec le port défini par l'environnement
+    port = int(os.getenv("PORT", 5000))  # Default à 5000 si non défini
+    socketio.run(app, host='0.0.0.0', port=port)
