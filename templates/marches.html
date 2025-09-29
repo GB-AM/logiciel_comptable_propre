@@ -6,11 +6,11 @@
     <ul>
     {% for marche in marches %}
         <li>
-            {{ marche.nom_marche }} - Client: {{ session.query(Client).get(marche.client_id).nom_entreprise if marche.client_id and session.query(Client).get(marche.client_id) else 'Non défini' }}
+            {{ marche.nom_marche }} - Client: {{ marche.client.nom_entreprise if marche.client else 'Non défini' }}
             - Montant HT: {{ "{:,.2f}".format(marche.montant_total_ht).replace(',', ' ') }} €
-            [<a href="/marche/dupliquer/{{ marche.id }}">Dupliquer</a>]
-            [<a href="/marche/modifier/{{ marche.id }}">Modifier</a>]
-            [<a href="/marche/archiver/{{ marche.id }}">Archiver</a>]
+            [<a href="#">Dupliquer</a>]
+            [<a href="#">Modifier</a>]
+            [<a href="#">Archiver</a>]
         </li>
     {% endfor %}
     </ul>

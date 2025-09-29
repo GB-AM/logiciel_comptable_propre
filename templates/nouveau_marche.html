@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head><title>Créer un Nouveau Marché</title></head>
+<head>
+    <title>Créer un Nouveau Marché</title>
+</head>
 <body>
     <h1>Créer un Nouveau Marché</h1>
     {% with messages = get_flashed_messages() %}
@@ -17,7 +19,7 @@
         <label>Code Postal :</label><input type="text" name="code_postal" required><br>
         <label>Ville :</label><input type="text" name="ville" required><br>
         <label>Client :</label>
-        <select name="client_id" id="client_select" required>
+        <select name="client_id" id="client_select" required onchange="updateClientInfo()">
             <option value="">Sélectionnez un client</option>
             {% for client in clients %}
                 <option value="{{ client.id }}" data-adresse="{{ client.adresse }}" data-cp="{{ client.code_postal }}" data-ville="{{ client.ville }}" data-tel="{{ client.telephone }}" data-mail="{{ client.mail_general }}">
@@ -25,6 +27,7 @@
                 </option>
             {% endfor %}
         </select><br>
+        <div id="client_info"></div>
         <label>Montant Total HT :</label><input type="text" id="montant_total_ht" name="montant_total_ht" readonly><br>
         <label>Taux de TVA :</label>
         <select name="taux_tva">
@@ -35,7 +38,7 @@
         <div id="penalites_container">
             <div class="penalite_row">
                 <label>Type :</label>
-                <select name="penalite_type_1">
+                <select name="penalite_type_1" onchange="updatePenaliteFields(1)">
                     <option value="">Sélectionnez</option>
                     <option value="Retard dans le commencement des travaux">Retard dans le commencement des travaux</option>
                     <option value="Retard dans l’achèvement des travaux">Retard dans l’achèvement des travaux</option>
@@ -57,9 +60,9 @@
                     <option value="Non-atteinte des performances des équipements">Non-atteinte des performances des équipements</option>
                     <option value="Retard dans la libération du terrain">Retard dans la libération du terrain</option>
                     <option value="Sous-traitance non-déclarée">Sous-traitance non-déclarée</option>
-                    <option value="Défaut de nettoyage">Défaut de nettoyage</option>																																											  
+                    <option value="Défaut de nettoyage">Défaut de nettoyage</option>
                 </select>
-                <label>Valeur :</label><input type="number" step="0.0001" name="penalite_1">
+                <label>Valeur :</label><input type="number" step="0.0001" name="penalite_1" id="penalite_value_1">
                 <label>Unité :</label>
                 <select name="unite_1" id="penalite_unite_1" onchange="customUnit(1)">
                     <option value="jour">€/jour</option>
@@ -68,8 +71,8 @@
                     <option value="m²">€/m²</option>
                     <option value="custom">Personnalisé</option>
                 </select>
-                <input type="text" name="unite_custom_1" style="display:none;" placeholder="Unité personnalisée">
-                <label>Minimum :</label><input type="number" step="0.01" name="minimum_1" value="0">
+                <input type="text" name="unite_custom_1" id="penalite_unite_custom_1" style="display:none;" placeholder="Unité personnalisée">
+                <label>Minimum :</label><input type="number" step="0.01" name="minimum_1" id="penalite_minimum_1" value="0">
             </div>
         </div>
         <button type="button" onclick="addPenalite()">Ajouter une pénalité</button><br>
@@ -80,14 +83,13 @@
                     <label>N° Lot {{ i }} :</label><input type="text" name="numero_lot_{{ i }}"><br>
                     <label>Intitulé Lot {{ i }} :</label><input type="text" name="intitule_lot_{{ i }}"><br>
                     <label>Entreprise {{ i }} :</label>
-                    <select name="Entreprise_nom_{{ i }}">
+                    <select name="enterprise_nom_{{ i }}">
                         <option value="">Sélectionnez</option>
-                        {% for entreprise in entreprises %}
-                            <option value="{{ entreprise.nom }}">{{ entreprise.nom }}</option>
+                        {% for enterprise in entreprises %}
+                            <option value="{{ enterprise.nom }}">{{ enterprise.nom }}</option>
                         {% endfor %}
                     </select><br>
-                    <label>Montant HT {{ i }} :</label><input type="number" step="0.01" name="montant_ht_{{ i }}" onchange="updateTotal()" onblur="formatAmount(this)" required><br>
-
+                    <label>Montant HT {{ i }} :</label><input type="text" name="montant_ht_{{ i }}" oninput="updateTotal()" onblur="formatAmount(this)" placeholder="000 000 000.00 €"><br>
                 </div>
             {% endfor %}
         </div>
@@ -96,89 +98,130 @@
     </form>
     <a href="/marches"><button>Retour</button></a>
     <script>
-        function updateTotal() {
-            let total = 0;
-            for (let i = 1; i <= 50; i++) {
-                const montant = document.querySelector(`input[name="montant_ht_${i}"]`);
-                if (montant && montant.value) {
-                    const value = parseFloat(montant.value);
-                    total += value;
-                    if (display) display.textContent = value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-                } else if (display) {
-                    display.textContent = '0.00 €';
-                }
+		function updateTotal() {
+			let total = 0;
+			for (let i = 1; i <= 50; i++) {
+				const montantInput = document.querySelector(`input[name="montant_ht_${i}"]`);
+				if (montantInput && montantInput.value) {
+					let value = parseFloat(montantInput.value.replace(/ /g, '').replace('€', '').replace(',', '.')); // Gère "45 000.00 €" ou "45,000.00 €"
+					if (!isNaN(value)) total += value;
+				}
+			}
+        document.getElementById('montant_total_ht').value = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+		}
+
+    function formatAmount(input) {
+			let value = parseFloat(input.value.replace(/ /g, '').replace('€', '').replace(',', '.')); // Nettoie avant conversion
+			if (!isNaN(value)) {
+				input.value = value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+				updateTotal();
+			} else {
+				input.value = ''; // Réinitialise si invalide
+			}
+		}
+
+    // ... (reste du JS inchangé : updateClientInfo, addPenalite, addLot, etc.)
+	</script>
+        function updateClientInfo() {
+            const select = document.getElementById('client_select');
+            const infoDiv = document.getElementById('client_info');
+            const selected = select.options[select.selectedIndex];
+            if (selected.value) {
+                infoDiv.innerHTML = `
+                    Adresse: ${selected.getAttribute('data-adresse')}<br>
+                    Code Postal: ${selected.getAttribute('data-cp')}<br>
+                    Ville: ${selected.getAttribute('data-ville')}<br>
+                    Téléphone: ${selected.getAttribute('data-tel')}<br>
+                    Mail: ${selected.getAttribute('data-mail')}
+                `;
+            } else {
+                infoDiv.innerHTML = '';
             }
-            document.getElementById('montant_total_ht').value = total.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
         }
 
-        function formatAmount(input) {
-            const id = input.name.split('_')[2];
-            const display = document.getElementById(`montant_display_${id}`);
-            if (input.value) {
-                const value = parseFloat(input.value).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-                input.value = parseFloat(input.value); // Garde la valeur brute
-                if (display) display.textContent = value;
-            } else if (display) {
-                display.textContent = '0.00 €';
-            }
-        }
-
+        let penaliteCount = 1;
         function addPenalite() {
+            penaliteCount++;
             const container = document.getElementById('penalites_container');
-            const rows = container.getElementsByClassName('penalite_row').length + 1;
-            const newRow = document.createElement('div');
-            newRow.className = 'penalite_row';
-            newRow.innerHTML = `
+            const newPenalite = document.createElement('div');
+            newPenalite.className = 'penalite_row';
+            newPenalite.innerHTML = `
                 <label>Type :</label>
-                <select name="penalite_type_${rows}">
+                <select name="penalite_type_${penaliteCount}" onchange="updatePenaliteFields(${penaliteCount})">
                     <option value="">Sélectionnez</option>
                     <option value="Retard dans le commencement des travaux">Retard dans le commencement des travaux</option>
                     <option value="Retard dans l’achèvement des travaux">Retard dans l’achèvement des travaux</option>
+                    <option value="Retard ou absence aux réunions">Retard ou absence aux réunions</option>
+                    <option value="Absence d’encadrement">Absence d’encadrement</option>
+                    <option value="Défaut d’exécution">Défaut d’exécution</option>
+                    <option value="Retard sur communication du PPSPS">Retard sur communication du PPSPS</option>
+                    <option value="Retard sur remise de documents">Retard sur remise de documents</option>
+                    <option value="Retard sur communication des devis TMA">Retard sur communication des devis TMA</option>
+                    <option value="Non-respect des règles de sécurité">Non-respect des règles de sécurité</option>
+                    <option value="Provisoires pour malfaçons">Provisoires pour malfaçons</option>
+                    <option value="Non remise de documents après exécution">Non remise de documents après exécution</option>
+                    <option value="Retard dans la levée des réserves d’OPR">Retard dans la levée des réserves d’OPR</option>
+                    <option value="Retard dans la levée des réserves de réception">Retard dans la levée des réserves de réception</option>
+                    <option value="Non-présentation de la carte d’identification professionnelle">Non-présentation de la carte d’identification professionnelle</option>
+                    <option value="Retard sur ordres donnés">Retard sur ordres donnés</option>
+                    <option value="Non-respect des surfaces dédiées aux logements">Non-respect des surfaces dédiées aux logements</option>
+                    <option value="Non-respect de label ou certification">Non-respect de label ou certification</option>
+                    <option value="Non-atteinte des performances des équipements">Non-atteinte des performances des équipements</option>
+                    <option value="Retard dans la libération du terrain">Retard dans la libération du terrain</option>
+                    <option value="Sous-traitance non-déclarée">Sous-traitance non-déclarée</option>
+                    <option value="Défaut de nettoyage">Défaut de nettoyage</option>
                 </select>
-                <label>Valeur :</label><input type="number" step="0.0001" name="penalite_${rows}">
+                <label>Valeur :</label><input type="number" step="0.0001" name="penalite_${penaliteCount}" id="penalite_value_${penaliteCount}">
                 <label>Unité :</label>
-                <select name="unite_${rows}">
+                <select name="unite_${penaliteCount}" id="penalite_unite_${penaliteCount}" onchange="customUnit(${penaliteCount})">
                     <option value="jour">€/jour</option>
                     <option value="fraction">1/xème</option>
                     <option value="logement">€/logement</option>
                     <option value="m²">€/m²</option>
                     <option value="custom">Personnalisé</option>
                 </select>
-                <input type="text" name="unite_custom_${rows}" style="display:none;" placeholder="Unité personnalisée">
-                <label>Minimum :</label><input type="number" step="0.01" name="minimum_${rows}" value="0">
+                <input type="text" name="unite_custom_${penaliteCount}" id="penalite_unite_custom_${penaliteCount}" style="display:none;" placeholder="Unité personnalisée">
+                <label>Minimum :</label><input type="number" step="0.01" name="minimum_${penaliteCount}" id="penalite_minimum_${penaliteCount}" value="0">
             `;
-            container.appendChild(newRow);
+            container.appendChild(newPenalite);
         }
 
+        let lotCount = 25;
         function addLot() {
+            lotCount++;
             const container = document.getElementById('lots_container');
-            const rows = container.getElementsByClassName('lot_row').length + 1;
-            if (rows <= 50) {
-                const newRow = document.createElement('div');
-                newRow.className = 'lot_row';
-                newRow.id = `lot_${rows}`;
-                newRow.innerHTML = `
-                    <label>N° Lot ${rows} :</label><input type="text" name="numero_lot_${rows}"><br>
-                    <label>Intitulé Lot ${rows} :</label><input type="text" name="intitule_lot_${rows}"><br>
-                    <label>Entreprise ${rows} :</label>
-                    <select name="entreprise_nom_${rows}">
-                        <option value="">Sélectionnez</option>
-                        {% for entreprise in Entreprise %}
-                            <option value="{{ entrerise.nom }}">{{ entreprise.nom }}</option>
-                        {% endfor %}
-                    </select><br>
-                    <label>Montant HT ${rows} :</label><input type="number" step="0.01" name="montant_ht_${rows}" onchange="updateTotal()" onblur="formatAmount(this)" required><br>
-                `;
-                container.appendChild(newRow);
+            const newLot = document.createElement('div');
+            newLot.className = 'lot_row';
+            newLot.id = `lot_${lotCount}`;
+            newLot.innerHTML = `
+                <label>N° Lot ${lotCount} :</label><input type="text" name="numero_lot_${lotCount}"><br>
+                <label>Intitulé Lot ${lotCount} :</label><input type="text" name="intitule_lot_${lotCount}"><br>
+                <label>Entreprise ${lotCount} :</label>
+                <select name="enterprise_nom_${lotCount}">
+                    <option value="">Sélectionnez</option>
+                    {% for enterprise in entreprises %}
+                        <option value="{{ enterprise.nom }}">{{ enterprise.nom }}</option>
+                    {% endfor %}
+                </select><br>
+                <label>Montant HT ${lotCount} :</label><input type="text" name="montant_ht_${lotCount}" oninput="updateTotal()" onblur="formatAmount(this)" placeholder="000 000 000.00 €"><br>
+            `;
+            container.appendChild(newLot);
+        }
+
+        function updatePenaliteFields(index) {
+            const select = document.getElementById(`penalite_unite_${index}`);
+            const customInput = document.getElementById(`penalite_unite_custom_${index}`);
+            if (select.value === 'custom') {
+                customInput.style.display = 'inline';
             } else {
-                alert('Maximum 50 lots atteint !');
+                customInput.style.display = 'none';
+                customInput.value = '';
             }
         }
 
-        window.onload = updateTotal;
+        function customUnit(index) {
+            updatePenaliteFields(index);
+        }
     </script>
-    <style>
-        .penalite_row, .lot_row { margin-bottom: 10px; }
-    </style>
 </body>
 </html>
