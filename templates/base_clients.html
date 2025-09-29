@@ -5,7 +5,21 @@
     <h1>Liste des Clients</h1>
     <ul>
         {% for client in clients %}
-            <li>{{ client.nom_entreprise }} - {{ client.adresse }} ({{ client.ville }})</li>
+            <li>
+                <strong>{{ client.nom_entreprise }}</strong><br>
+                Forme Juridique: {{ client.forme_juridique }}<br>
+                Représentant Légal: {{ client.representant_legal }} ({{ client.qualite }})<br>
+                Adresse: {{ client.adresse }} {{ client.complement_adresse }}<br>
+                {{ client.code_postal }} {{ client.ville }}<br>
+                Téléphone: {{ client.telephone }}<br>
+                Mail Général: {{ client.mail_general }}<br>
+                SIRET: {{ client.siret }}<br>
+                Code APE: {{ client.code_ape }}<br>
+                Chargé Suivi Travaux: {{ client.nom_charge_suivi_travaux }} ({{ client.fonction_charge_suivi_travaux }})<br>
+                Mail: {{ client.mail_charge_suivi_travaux }}, Tel: {{ client.telephone_charge_suivi_travaux }}<br>
+                Chargé Suivi Comptabilité: {{ client.nom_charge_suivi_compta }} ({{ client.fonction_charge_suivi_compta }})<br>
+                Mail: {{ client.mail_charge_suivi_compta }}
+            </li>
         {% endfor %}
     </ul>
     <a href="/"><button>Retour</button></a>

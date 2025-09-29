@@ -1,11 +1,80 @@
 <!DOCTYPE html>
 <html>
-<head><title>Base Entreprises</title></head>
+<head><title>Base entreprises</title></head>
 <body>
-    <h1>Liste des Entreprises</h1>
+    <h1>Liste des entreprises</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <h2>Ajouter un entreprises</h2>
+    <form method="post">
+        <input type="hidden" name="add" value="1">
+        <input type="text" name="nom_entreprise" placeholder="Nom Entreprise" required><br>
+        <input type="text" name="forme_juridique" placeholder="Forme Juridique"><br>
+        <input type="text" name="representant_legal" placeholder="Représentant Légal"><br>
+        <input type="text" name="qualite" placeholder="Qualité"><br>
+        <input type="text" name="adresse" placeholder="Adresse"><br>
+        <input type="text" name="complement_adresse" placeholder="Complement Adresse"><br>
+        <input type="text" name="code_postal" placeholder="Code Postal"><br>
+        <input type="text" name="ville" placeholder="Ville"><br>
+        <input type="text" name="telephone" placeholder="Téléphone"><br>
+        <input type="text" name="mail_general" placeholder="Mail Général"><br>
+        <input type="text" name="siret" placeholder="SIRET"><br>
+        <input type="text" name="code_ape" placeholder="Code APE"><br>
+        <input type="text" name="nom_charge_suivi_travaux" placeholder="Nom Chargé Suivi Travaux"><br>
+        <input type="text" name="fonction_charge_suivi_travaux" placeholder="Fonction Chargé Suivi Travaux"><br>
+        <input type="text" name="mail_charge_suivi_travaux" placeholder="Mail Chargé Suivi Travaux"><br>
+        <input type="text" name="telephone_charge_suivi_travaux" placeholder="Téléphone Chargé Suivi Travaux"><br>
+        <input type="text" name="nom_charge_suivi_compta" placeholder="Nom Chargé Suivi Comptabilité"><br>
+        <input type="text" name="fonction_charge_suivi_compta" placeholder="Fonction Chargé Suivi Comptabilité"><br>
+        <input type="text" name="mail_charge_suivi_compta" placeholder="Mail Chargé Suivi Comptabilité"><br>
+        <button type="submit">Ajouter</button>
+    </form>
     <ul>
-        {% for entreprise in entreprises %}
-            <li>{{ entreprise.nom }}</li>
+        {% for entreprises in entreprises %}
+            <li>
+                <strong>{{ entreprises.nom_entreprise }}</strong><br>
+                Forme Juridique: {{ entreprises.forme_juridique }}<br>
+                Représentant Légal: {{ entreprises.representant_legal }} ({{ entreprises.qualite }})<br>
+                Adresse: {{ entreprises.adresse }} {{ entreprises.complement_adresse }}<br>
+                {{ entreprises.code_postal }} {{ entreprises.ville }}<br>
+                Téléphone: {{ entreprises.telephone }}<br>
+                Mail Général: {{ entreprises.mail_general }}<br>
+                SIRET: {{ entreprises.siret }}<br>
+                Code APE: {{ entreprises.code_ape }}<br>
+                Chargé Suivi Travaux: {{ entreprises.nom_charge_suivi_travaux }} ({{ entreprises.fonction_charge_suivi_travaux }})<br>
+                Mail: {{ entreprises.mail_charge_suivi_travaux }}, Tel: {{ entreprises.telephone_charge_suivi_travaux }}<br>
+                Chargé Suivi Comptabilité: {{ entreprises.nom_charge_suivi_compta }} ({{ entreprises.fonction_charge_suivi_compta }})<br>
+                Mail: {{ entreprises.mail_charge_suivi_compta }}<br>
+                <form method="post">
+                    <input type="hidden" name="entreprises_id" value="{{ entreprises.id }}">
+                    <input type="text" name="nom_entreprise" value="{{ entreprises.nom_entreprise }}" required><br>
+                    <input type="text" name="forme_juridique" value="{{ entreprises.forme_juridique }}"><br>
+                    <input type="text" name="representant_legal" value="{{ entreprises.representant_legal }}"><br>
+                    <input type="text" name="qualite" value="{{ entreprises.qualite }}"><br>
+                    <input type="text" name="adresse" value="{{ entreprises.adresse }}"><br>
+                    <input type="text" name="complement_adresse" value="{{ entreprises.complement_adresse }}"><br>
+                    <input type="text" name="code_postal" value="{{ entreprises.code_postal }}"><br>
+                    <input type="text" name="ville" value="{{ entreprises.ville }}"><br>
+                    <input type="text" name="telephone" value="{{ entreprises.telephone }}"><br>
+                    <input type="text" name="mail_general" value="{{ entreprises.mail_general }}"><br>
+                    <input type="text" name="siret" value="{{ entreprises.siret }}"><br>
+                    <input type="text" name="code_ape" value="{{ entreprises.code_ape }}"><br>
+                    <input type="text" name="nom_charge_suivi_travaux" value="{{ entreprises.nom_charge_suivi_travaux }}"><br>
+                    <input type="text" name="fonction_charge_suivi_travaux" value="{{ entreprises.fonction_charge_suivi_travaux }}"><br>
+                    <input type="text" name="mail_charge_suivi_travaux" value="{{ entreprises.mail_charge_suivi_travaux }}"><br>
+                    <input type="text" name="telephone_charge_suivi_travaux" value="{{ entreprises.telephone_charge_suivi_travaux }}"><br>
+                    <input type="text" name="nom_charge_suivi_compta" value="{{ entreprises.nom_charge_suivi_compta }}"><br>
+                    <input type="text" name="fonction_charge_suivi_compta" value="{{ entreprises.fonction_charge_suivi_compta }}"><br>
+                    <input type="text" name="mail_charge_suivi_compta" value="{{ entreprises.mail_charge_suivi_compta }}"><br>
+                    <button type="submit" name="update" value="1">Mettre à Jour</button>
+                    <button type="submit" name="delete" value="{{ entreprises.id }}">Supprimer</button>
+                </form>
+            </li>
         {% endfor %}
     </ul>
     <a href="/"><button>Retour</button></a>

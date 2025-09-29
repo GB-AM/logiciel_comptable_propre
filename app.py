@@ -23,16 +23,55 @@ class Client(db.Model):
     __tablename__ = 'clients'
     id = db.Column(db.Integer, primary_key=True)
     nom_entreprise = db.Column(db.String(100), nullable=False)
+    forme_juridique = db.Column(db.String(100))
+    representant_legal = db.Column(db.String(100))
+    qualite = db.Column(db.String(100))
     adresse = db.Column(db.String(200))
+    complement_adresse = db.Column(db.String(200))
     code_postal = db.Column(db.String(10))
     ville = db.Column(db.String(100))
     telephone = db.Column(db.String(20))
     mail_general = db.Column(db.String(100))
+    siret = db.Column(db.String(14))
+    code_ape = db.Column(db.String(5))
+    nom_charge_suivi_travaux = db.Column(db.String(100))
+    fonction_charge_suivi_travaux = db.Column(db.String(100))
+    mail_charge_suivi_travaux = db.Column(db.String(100))
+    telephone_charge_suivi_travaux = db.Column(db.String(20))
+    nom_charge_suivi_compta = db.Column(db.String(100))
+    fonction_charge_suivi_compta = db.Column(db.String(100))
+    mail_charge_suivi_compta = db.Column(db.String(100))
 
 class Entreprise(db.Model):
     __tablename__ = 'entreprises'
     id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String(100), nullable=False)
+    nom_entreprise = db.Column(db.String(100), nullable=False)
+    forme_juridique = db.Column(db.String(100))
+    representant_legal = db.Column(db.String(100))
+    qualite = db.Column(db.String(100))
+    adresse = db.Column(db.String(200))
+    complement_adresse = db.Column(db.String(200))
+    code_postal = db.Column(db.String(10))
+    ville = db.Column(db.String(100))
+    telephone = db.Column(db.String(20))
+    mail_general = db.Column(db.String(100))
+    siret = db.Column(db.String(14))
+    code_ape = db.Column(db.String(5))
+    titre_signataire_doc = db.Column(db.String(100))
+    nom_signataire_doc = db.Column(db.String(100))
+    prenom_signataire_doc = db.Column(db.String(100))
+    fonction_signataire_doc = db.Column(db.String(100))
+    mail_signataire_doc = db.Column(db.String(100))
+    telephone_signataire_doc = db.Column(db.String(20))
+    titre_signataire_ar24 = db.Column(db.String(100))
+    nom_signataire_ar24 = db.Column(db.String(100))
+    prenom_signataire_ar24 = db.Column(db.String(100))
+    fonction_signataire_ar24 = db.Column(db.String(100))
+    mail_signataire_ar24 = db.Column(db.String(100))
+    titre_correspondant_situations = db.Column(db.String(100))
+    nom_correspondant_situations = db.Column(db.String(100))
+    prenom_correspondant_situations = db.Column(db.String(100))
+    mail_correspondant_situations = db.Column(db.String(100))
 
 class Marche(db.Model):
     __tablename__ = 'marches'
@@ -59,7 +98,7 @@ class Penalite(db.Model):
 
 # Création de la base de données
 with app.app_context():
-    db.create_all()
+    db.create_all()  # Recrée les tables avec les nouveaux champs    
 
 # Routes
 @app.route('/')
@@ -144,14 +183,126 @@ def import_data():
         return redirect(url_for('import_data'))  # Reste sur la page d'import après succès
     return render_template('import_data.html')
 
-@app.route('/base_clients')
+@app.route('/base_clients', methods=['GET', 'POST'])
 def base_clients():
+    if request.method == 'POST':
+        if 'delete' in request.form:
+            client_id = request.form['delete']
+            client = Client.query.get_or_404(client_id)
+            db.session.delete(client)
+            db.session.commit()
+            flash('Client supprimé avec succès !')
+        elif 'update' in request.form:
+            client_id = request.form['client_id']
+            client = Client.query.get_or_404(client_id)
+            client.nom_entreprise = request.form['nom_entreprise']
+            client.forme_juridique = request.form['forme_juridique']
+            client.representant_legal = request.form['representant_legal']
+            client.qualite = request.form['qualite']
+            client.adresse = request.form['adresse']
+            client.complement_adresse = request.form['complement_adresse']
+            client.code_postal = request.form['code_postal']
+            client.ville = request.form['ville']
+            client.telephone = request.form['telephone']
+            client.mail_general = request.form['mail_general']
+            client.siret = request.form['siret']
+            client.code_ape = request.form['code_ape']
+            client.nom_charge_suivi_travaux = request.form['nom_charge_suivi_travaux']
+            client.fonction_charge_suivi_travaux = request.form['fonction_charge_suivi_travaux']
+            client.mail_charge_suivi_travaux = request.form['mail_charge_suivi_travaux']
+            client.telephone_charge_suivi_travaux = request.form['telephone_charge_suivi_travaux']
+            client.nom_charge_suivi_compta = request.form['nom_charge_suivi_compta']
+            client.fonction_charge_suivi_compta = request.form['fonction_charge_suivi_compta']
+            client.mail_charge_suivi_compta = request.form['mail_charge_suivi_compta']
+            db.session.commit()
+            flash('Client mis à jour avec succès !')
+        elif 'add' in request.form:
+            new_client = Client(
+                nom_entreprise=request.form['nom_entreprise'],
+                forme_juridique=request.form['forme_juridique'],
+                representant_legal=request.form['representant_legal'],
+                qualite=request.form['qualite'],
+                adresse=request.form['adresse'],
+                complement_adresse=request.form['complement_adresse'],
+                code_postal=request.form['code_postal'],
+                ville=request.form['ville'],
+                telephone=request.form['telephone'],
+                mail_general=request.form['mail_general'],
+                siret=request.form['siret'],
+                code_ape=request.form['code_ape'],
+                nom_charge_suivi_travaux=request.form['nom_charge_suivi_travaux'],
+                fonction_charge_suivi_travaux=request.form['fonction_charge_suivi_travaux'],
+                mail_charge_suivi_travaux=request.form['mail_charge_suivi_travaux'],
+                telephone_charge_suivi_travaux=request.form['telephone_charge_suivi_travaux'],
+                nom_charge_suivi_compta=request.form['nom_charge_suivi_compta'],
+                fonction_charge_suivi_compta=request.form['fonction_charge_suivi_compta'],
+                mail_charge_suivi_compta=request.form['mail_charge_suivi_compta']
+            )
+            db.session.add(new_client)
+            db.session.commit()
+            flash('Client ajouté avec succès !')
     clients = Client.query.all()
     return render_template('base_clients.html', clients=clients)
 
-@app.route('/base_entreprises')
+@app.route('/base_entreprises', methods=['GET', 'POST'])
 def base_entreprises():
-    entreprises = Entreprise.query.all()
+    if request.method == 'POST':
+        if 'delete' in request.form:
+            client_id = request.form['delete']
+            client = Client.query.get_or_404(client_id)
+            db.session.delete(client)
+            db.session.commit()
+            flash('Client supprimé avec succès !')
+        elif 'update' in request.form:
+            client_id = request.form['client_id']
+            client = Client.query.get_or_404(client_id)
+            client.nom_entreprise = request.form['nom_entreprise']
+            client.forme_juridique = request.form['forme_juridique']
+            client.representant_legal = request.form['representant_legal']
+            client.qualite = request.form['qualite']
+            client.adresse = request.form['adresse']
+            client.complement_adresse = request.form['complement_adresse']
+            client.code_postal = request.form['code_postal']
+            client.ville = request.form['ville']
+            client.telephone = request.form['telephone']
+            client.mail_general = request.form['mail_general']
+            client.siret = request.form['siret']
+            client.code_ape = request.form['code_ape']
+            client.nom_charge_suivi_travaux = request.form['nom_charge_suivi_travaux']
+            client.fonction_charge_suivi_travaux = request.form['fonction_charge_suivi_travaux']
+            client.mail_charge_suivi_travaux = request.form['mail_charge_suivi_travaux']
+            client.telephone_charge_suivi_travaux = request.form['telephone_charge_suivi_travaux']
+            client.nom_charge_suivi_compta = request.form['nom_charge_suivi_compta']
+            client.fonction_charge_suivi_compta = request.form['fonction_charge_suivi_compta']
+            client.mail_charge_suivi_compta = request.form['mail_charge_suivi_compta']
+            db.session.commit()
+            flash('Client mis à jour avec succès !')
+        elif 'add' in request.form:
+            new_client = Client(
+                nom_entreprise=request.form['nom_entreprise'],
+                forme_juridique=request.form['forme_juridique'],
+                representant_legal=request.form['representant_legal'],
+                qualite=request.form['qualite'],
+                adresse=request.form['adresse'],
+                complement_adresse=request.form['complement_adresse'],
+                code_postal=request.form['code_postal'],
+                ville=request.form['ville'],
+                telephone=request.form['telephone'],
+                mail_general=request.form['mail_general'],
+                siret=request.form['siret'],
+                code_ape=request.form['code_ape'],
+                nom_charge_suivi_travaux=request.form['nom_charge_suivi_travaux'],
+                fonction_charge_suivi_travaux=request.form['fonction_charge_suivi_travaux'],
+                mail_charge_suivi_travaux=request.form['mail_charge_suivi_travaux'],
+                telephone_charge_suivi_travaux=request.form['telephone_charge_suivi_travaux'],
+                nom_charge_suivi_compta=request.form['nom_charge_suivi_compta'],
+                fonction_charge_suivi_compta=request.form['fonction_charge_suivi_compta'],
+                mail_charge_suivi_compta=request.form['mail_charge_suivi_compta']
+            )
+            db.session.add(new_client)
+            db.session.commit()
+            flash('Client ajouté avec succès !')
+    entreprises = Client.query.all()
     return render_template('base_entreprises.html', entreprises=entreprises)
     
 if __name__ == '__main__':
